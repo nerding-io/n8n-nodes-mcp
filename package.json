@@ -47,7 +47,7 @@
 		"n8n-workflow": "*",
 		"prettier": "^2.7.1",
 		"ts-jest": "^29.2.6",
-		"typescript": "~4.8.4"
+		"typescript": "~5.8.2"
 	},
 	"dependencies": {
 		"@langchain/core": "^0.1.63",

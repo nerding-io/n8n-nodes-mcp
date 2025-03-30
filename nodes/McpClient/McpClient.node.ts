@@ -97,6 +97,12 @@ export class McpClient implements INodeType {
 						action: 'List available prompts',
 					},
 					{
+						name: 'List Resource Templates',
+						value: 'listResourceTemplates',
+						description: 'Get a list of available resource templates',
+						action: 'List available resource templates',
+					},
+					{
 						name: 'List Resources',
 						value: 'listResources',
 						description: 'Get a list of available resources',
@@ -302,6 +308,7 @@ export class McpClient implements INodeType {
 					capabilities: {
 						prompts: {},
 						resources: {},
+
 						tools: {},
 					},
 				},
@@ -323,6 +330,14 @@ export class McpClient implements INodeType {
 					const resources = await client.listResources();
 					returnData.push({
 						json: { resources },
+					});
+					break;
+				}
+
+				case 'listResourceTemplates': {
+					const resourceTemplates = await client.listResourceTemplates();
+					returnData.push({
+						json: { resourceTemplates },
 					});
 					break;
 				}

@@ -6,13 +6,13 @@ MCP is a protocol that enables AI models to interact with external tools and dat
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
-[Installation](#installation)  
-[Credentials](#credentials)  
-[Environment Variables](#environment-variables)  
-[Operations](#operations)  
-[Using as a Tool](#using-as-a-tool) [ 
-[Compatibility](#compatibility)  
-[Resources](#resources)  
+[Installation](#installation)
+[Credentials](#credentials)
+[Environment Variables](#environment-variables)
+[Operations](#operations)
+[Using as a Tool](#using-as-a-tool)
+[Compatibility](#compatibility)
+[Resources](#resources)
 
 ## Getting Started
 
@@ -26,7 +26,7 @@ Shoutout to all the creators of the following n8n community videos that are grea
 
 - [Is MCP the Future of N8N AI Agents? (Fully Tested!)](https://youtu.be/sb5hCcFYPIE)
 - [Connect N8N AI Agents to EVERYTHING using MCP?](https://youtu.be/tTDRgkD-120)
-- [Build an AI Agent That Can Use Any Tool (MCP in n8n Tutorial)](https://youtu.be/pqYQwyxfx44)
+- [Build an AI Agent That Can Use Any Tool (MCP in n8n Tutorial)](https://www.youtube.com/watch?v=SVZe2rdhYmA)
 - [The NEW N8N MCP is an Absolute Game-Changer (Brave Search MCP)](https://youtu.be/RxXS_FpJyGM)
 - [MCP & n8n Automation: The Ultimate Guide for MCP AI Agents (2025)](https://www.youtube.com/watch?v=mbQsnrxHPwE)
 - [REVOLUÇÃO na criação de AGENTES no N8N com o MCP Server!!!](https://www.youtube.com/watch?v=zgH85dJcs5c) (Portuguese)
@@ -138,7 +138,7 @@ services:
       - MCP_OPENAI_API_KEY=your-openai-key
       - MCP_SERPER_API_KEY=your-serper-key
       - MCP_WEATHER_API_KEY=your-weather-api-key
-      
+
       # Enable community nodes as tools
       - N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
     ports:

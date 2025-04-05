@@ -26,13 +26,13 @@ importers:
         version: 29.5.14
       '@typescript-eslint/parser':
         specifier: ~5.45
-        version: 5.45.1(eslint@8.57.1)(typescript@4.8.4)
+        version: 5.45.1(eslint@8.57.1)(typescript@5.8.3)
       eslint:
         specifier: ^8.57.1
         version: 8.57.1
       eslint-plugin-n8n-nodes-base:
         specifier: ^1.11.0
-        version: 1.16.3(eslint@8.57.1)(typescript@4.8.4)
+        version: 1.16.3(eslint@8.57.1)(typescript@5.8.3)
       gulp:
         specifier: ^4.0.2
         version: 4.0.2
@@ -47,10 +47,10 @@ importers:
         version: 2.8.8
       ts-jest:
         specifier: ^29.2.6
-        version: 29.3.1(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0(@types/node@22.14.0))(typescript@4.8.4)
+        version: 29.3.1(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0(@types/node@22.14.0))(typescript@5.8.3)
       typescript:
-        specifier: ~4.8.4
-        version: 4.8.4
+        specifier: ~5.8.3
+        version: 5.8.3
 
 packages:
 
@@ -3028,9 +3028,9 @@ packages:
   typedarray@0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
 
-  typescript@4.8.4:
-    resolution: {integrity: sha512-QCh+85mCy+h0IGff8r5XWzOVSbBO+KfeYrMQh7NJ58QujwcE22u+NUSmUxqF+un70P9GXKxa2HCNiTTMJknyjQ==}
-    engines: {node: '>=4.2.0'}
+  typescript@5.8.3:
+    resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
+    engines: {node: '>=14.17'}
     hasBin: true
 
   unc-path-regex@0.1.2:
@@ -3774,15 +3774,15 @@ snapshots:
     dependencies:
       '@types/yargs-parser': 21.0.3
 
-  '@typescript-eslint/parser@5.45.1(eslint@8.57.1)(typescript@4.8.4)':
+  '@typescript-eslint/parser@5.45.1(eslint@8.57.1)(typescript@5.8.3)':
     dependencies:
       '@typescript-eslint/scope-manager': 5.45.1
       '@typescript-eslint/types': 5.45.1
-      '@typescript-eslint/typescript-estree': 5.45.1(typescript@4.8.4)
+      '@typescript-eslint/typescript-estree': 5.45.1(typescript@5.8.3)
       debug: 4.4.0
       eslint: 8.57.1
     optionalDependencies:
-      typescript: 4.8.4
+      typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
 
@@ -3800,7 +3800,7 @@ snapshots:
 
   '@typescript-eslint/types@6.21.0': {}
 
-  '@typescript-eslint/typescript-estree@5.45.1(typescript@4.8.4)':
+  '@typescript-eslint/typescript-estree@5.45.1(typescript@5.8.3)':
     dependencies:
       '@typescript-eslint/types': 5.45.1
       '@typescript-eslint/visitor-keys': 5.45.1
@@ -3808,13 +3808,13 @@ snapshots:
       globby: 11.1.0
       is-glob: 4.0.3
       semver: 7.7.1
-      tsutils: 3.21.0(typescript@4.8.4)
+      tsutils: 3.21.0(typescript@5.8.3)
     optionalDependencies:
-      typescript: 4.8.4
+      typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/typescript-estree@6.21.0(typescript@4.8.4)':
+  '@typescript-eslint/typescript-estree@6.21.0(typescript@5.8.3)':
     dependencies:
       '@typescript-eslint/types': 6.21.0
       '@typescript-eslint/visitor-keys': 6.21.0
@@ -3823,20 +3823,20 @@ snapshots:
       is-glob: 4.0.3
       minimatch: 9.0.3
       semver: 7.7.1
-      ts-api-utils: 1.4.3(typescript@4.8.4)
+      ts-api-utils: 1.4.3(typescript@5.8.3)
     optionalDependencies:
-      typescript: 4.8.4
+      typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@6.21.0(eslint@8.57.1)(typescript@4.8.4)':
+  '@typescript-eslint/utils@6.21.0(eslint@8.57.1)(typescript@5.8.3)':
     dependencies:
       '@eslint-community/eslint-utils': 4.5.1(eslint@8.57.1)
       '@types/json-schema': 7.0.15
       '@types/semver': 7.7.0
       '@typescript-eslint/scope-manager': 6.21.0
       '@typescript-eslint/types': 6.21.0
-      '@typescript-eslint/typescript-estree': 6.21.0(typescript@4.8.4)
+      '@typescript-eslint/typescript-estree': 6.21.0(typescript@5.8.3)
       eslint: 8.57.1
       semver: 7.7.1
     transitivePeerDependencies:
@@ -4548,9 +4548,9 @@ snapshots:
 
   eslint-plugin-local@1.0.0: {}
 
-  eslint-plugin-n8n-nodes-base@1.16.3(eslint@8.57.1)(typescript@4.8.4):
+  eslint-plugin-n8n-nodes-base@1.16.3(eslint@8.57.1)(typescript@5.8.3):
     dependencies:
-      '@typescript-eslint/utils': 6.21.0(eslint@8.57.1)(typescript@4.8.4)
+      '@typescript-eslint/utils': 6.21.0(eslint@8.57.1)(typescript@5.8.3)
       camel-case: 4.1.2
       eslint-plugin-local: 1.0.0
       indefinite: 2.5.1
@@ -6772,11 +6772,11 @@ snapshots:
     dependencies:
       yargs: 17.7.2
 
-  ts-api-utils@1.4.3(typescript@4.8.4):
+  ts-api-utils@1.4.3(typescript@5.8.3):
     dependencies:
-      typescript: 4.8.4
+      typescript: 5.8.3
 
-  ts-jest@29.3.1(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0(@types/node@22.14.0))(typescript@4.8.4):
+  ts-jest@29.3.1(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0(@types/node@22.14.0))(typescript@5.8.3):
     dependencies:
       bs-logger: 0.2.6
       ejs: 3.1.10
@@ -6788,7 +6788,7 @@ snapshots:
       make-error: 1.3.6
       semver: 7.7.1
       type-fest: 4.39.1
-      typescript: 4.8.4
+      typescript: 5.8.3
       yargs-parser: 21.1.1
     optionalDependencies:
       '@babel/core': 7.26.10
@@ -6800,10 +6800,10 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  tsutils@3.21.0(typescript@4.8.4):
+  tsutils@3.21.0(typescript@5.8.3):
     dependencies:
       tslib: 1.14.1
-      typescript: 4.8.4
+      typescript: 5.8.3
 
   type-check@0.4.0:
     dependencies:
@@ -6827,7 +6827,7 @@ snapshots:
 
   typedarray@0.0.6: {}
 
-  typescript@4.8.4: {}
+  typescript@5.8.3: {}
 
   unc-path-regex@0.1.2: {}
 

@@ -208,13 +208,20 @@ export class McpClient implements INodeType {
 				const messagesPostEndpoint = (sseCredentials.messagesPostEndpoint as string) || '';
 
 				// Parse headers
-				const headers: Record<string, string> = {};
+				let headers: Record<string, string> = {};
 				if (sseCredentials.headers) {
-					const headerLines = (sseCredentials.headers as string).split('\n');
-					for (const line of headerLines) {
-						const [name, value] = line.split(':', 2);
-						if (name && value) {
-							headers[name.trim()] = value.trim();
+					const headersPairs = (sseCredentials.headers as string).split(/[,\n\s]+/);
+					for (const pair of headersPairs) {
+						const trimmedPair = pair.trim();
+						if (trimmedPair) {
+							const equalsIndex = trimmedPair.indexOf('=');
+							if (equalsIndex > 0) {
+								const name = trimmedPair.substring(0, equalsIndex).trim();
+								const value = trimmedPair.substring(equalsIndex + 1).trim();
+								if (name && value !== undefined) {
+									headers[name] = value;
+								}
+							}
 						}
 					}
 				}
@@ -231,9 +238,9 @@ export class McpClient implements INodeType {
 							headers,
 							...(messagesPostEndpoint
 								? {
-										// @ts-ignore
-										endpoint: new URL(messagesPostEndpoint),
-								  }
+									// @ts-ignore
+									endpoint: new URL(messagesPostEndpoint),
+								}
 								: {}),
 						},
 					},
@@ -360,8 +367,8 @@ export class McpClient implements INodeType {
 					const tools = Array.isArray(rawTools)
 						? rawTools
 						: Array.isArray(rawTools?.tools)
-						? rawTools.tools
-						: Object.values(rawTools?.tools || {});
+							? rawTools.tools
+							: Object.values(rawTools?.tools || {});
 
 					if (!tools.length) {
 						throw new NodeOperationError(this.getNode(), 'No tools found from MCP client');
@@ -370,57 +377,57 @@ export class McpClient implements INodeType {
 					const aiTools = tools.map((tool: any) => {
 						const paramSchema = tool.inputSchema?.properties
 							? z.object(
-									Object.entries(tool.inputSchema.properties).reduce(
-										(acc: any, [key, prop]: [string, any]) => {
-											let zodType: z.ZodType;
+								Object.entries(tool.inputSchema.properties).reduce(
+									(acc: any, [key, prop]: [string, any]) => {
+										let zodType: z.ZodType;
 
-											switch (prop.type) {
-												case 'string':
-													zodType = z.string();
-													break;
-												case 'number':
-													zodType = z.number();
-													break;
-												case 'integer':
-													zodType = z.number().int();
-													break;
-												case 'boolean':
-													zodType = z.boolean();
-													break;
-												case 'array':
-													if (prop.items?.type === 'string') {
-														zodType = z.array(z.string());
-													} else if (prop.items?.type === 'number') {
-														zodType = z.array(z.number());
-													} else if (prop.items?.type === 'boolean') {
-														zodType = z.array(z.boolean());
-													} else {
-														zodType = z.array(z.any());
-													}
-													break;
-												case 'object':
-													zodType = z.record(z.string(), z.any());
-													break;
-												default:
-													zodType = z.any();
-											}
+										switch (prop.type) {
+											case 'string':
+												zodType = z.string();
+												break;
+											case 'number':
+												zodType = z.number();
+												break;
+											case 'integer':
+												zodType = z.number().int();
+												break;
+											case 'boolean':
+												zodType = z.boolean();
+												break;
+											case 'array':
+												if (prop.items?.type === 'string') {
+													zodType = z.array(z.string());
+												} else if (prop.items?.type === 'number') {
+													zodType = z.array(z.number());
+												} else if (prop.items?.type === 'boolean') {
+													zodType = z.array(z.boolean());
+												} else {
+													zodType = z.array(z.any());
+												}
+												break;
+											case 'object':
+												zodType = z.record(z.string(), z.any());
+												break;
+											default:
+												zodType = z.any();
+										}
 
-											if (prop.description) {
-												zodType = zodType.describe(prop.description);
-											}
+										if (prop.description) {
+											zodType = zodType.describe(prop.description);
+										}
 
-											if (!tool.inputSchema?.required?.includes(key)) {
-												zodType = zodType.optional();
-											}
+										if (!tool.inputSchema?.required?.includes(key)) {
+											zodType = zodType.optional();
+										}
 
-											return {
-												...acc,
-												[key]: zodType,
-											};
-										},
-										{},
-									),
-							  )
+										return {
+											...acc,
+											[key]: zodType,
+										};
+									},
+									{},
+								),
+							)
 							: z.object({});
 
 						return new DynamicStructuredTool({
@@ -505,8 +512,7 @@ export class McpClient implements INodeType {
 					} catch (error) {
 						throw new NodeOperationError(
 							this.getNode(),
-							`Failed to parse tool parameters: ${
-								(error as Error).message
+							`Failed to parse tool parameters: ${(error as Error).message
 							}. Make sure the parameters are valid JSON.`,
 						);
 					}
@@ -517,8 +523,8 @@ export class McpClient implements INodeType {
 						const toolsList = Array.isArray(availableTools)
 							? availableTools
 							: Array.isArray(availableTools?.tools)
-							? availableTools.tools
-							: Object.values(availableTools?.tools || {});
+								? availableTools.tools
+								: Object.values(availableTools?.tools || {});
 
 						const toolExists = toolsList.some((tool: any) => tool.name === toolName);
 

@@ -210,10 +210,19 @@ export class McpClient implements INodeType {
 				// Parse headers
 				let headers: Record<string, string> = {};
 				if (sseCredentials.headers) {
-					try {
-						headers = JSON.parse(sseCredentials.headers as string)
-					} catch {
-						headers = { 'Content-Type': 'application/json' }
+					const headersPairs = (sseCredentials.headers as string).split(/[,\n\s]+/);
+					for (const pair of headersPairs) {
+						const trimmedPair = pair.trim();
+						if (trimmedPair) {
+							const equalsIndex = trimmedPair.indexOf('=');
+							if (equalsIndex > 0) {
+								const name = trimmedPair.substring(0, equalsIndex).trim();
+								const value = trimmedPair.substring(equalsIndex + 1).trim();
+								if (name && value !== undefined) {
+									headers[name] = value;
+								}
+							}
+						}
 					}
 				}
 

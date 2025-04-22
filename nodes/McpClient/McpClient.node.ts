@@ -184,6 +184,7 @@ export class McpClient implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const returnData: INodeExecutionData[] = [];
 		const operation = this.getNodeParameter('operation', 0) as string;
+		let transport: Transport | undefined;
 
 		// For backward compatibility - if connectionType isn't set, default to 'cmd'
 		let connectionType = 'cmd';
@@ -195,8 +196,6 @@ export class McpClient implements INodeType {
 		}
 
 		try {
-			let transport: Transport;
-
 			if (connectionType === 'sse') {
 				// Use SSE transport
 				const sseCredentials = await this.getCredentials('mcpClientSseApi');
@@ -434,7 +433,7 @@ export class McpClient implements INodeType {
 										arguments: params,
 									}, CallToolResultSchema, {
 										// TODO: Support these options using the N8N's Node Config UI
-										resetTimeoutOnProgress: true,
+										// resetTimeoutOnProgress: true,
 									});
 
 									return typeof result === 'object' ? JSON.stringify(result) : String(result);
@@ -539,7 +538,7 @@ export class McpClient implements INodeType {
 							arguments: toolParams,
 						}, CallToolResultSchema, {
 							// TODO: Support these options using the N8N's Node Config UI
-							resetTimeoutOnProgress: true,
+							// resetTimeoutOnProgress: true,
 						});
 
 						this.logger.debug(`Tool executed successfully: ${JSON.stringify(result)}`);
@@ -585,6 +584,10 @@ export class McpClient implements INodeType {
 				this.getNode(),
 				`Failed to execute operation: ${(error as Error).message}`,
 			);
+		} finally {
+			if (transport) {
+				await transport.close();
+			}
 		}
 	}
 }

@@ -10,7 +10,7 @@ import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { RequestOptions } from '@modelcontextprotocol/sdk/shared/protocol.ts';
+import { RequestOptions } from '@modelcontextprotocol/sdk/shared/protocol';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
@@ -318,48 +318,42 @@ export class McpClient implements INodeType {
 			);
 
 			try {
-                // Create a RequestOptions object from environment variables
-                const requestOptions: RequestOptions = {};
-
-                // Read timeout from environment
-                if (process.env.MCP_REQUEST_TIMEOUT_MS) {
-                    const timeoutMs = parseInt(process.env.MCP_REQUEST_TIMEOUT_MS, 10);
-                    if (!isNaN(timeoutMs) && timeoutMs > 0) {
-                        requestOptions.timeout = timeoutMs;
-                        this.logger.debug(`Using custom request timeout: \${timeoutMs}ms`);
-                    }
-                }
-
-                // Read resetTimeoutOnProgress from environment
-                if (process.env.MCP_RESET_TIMEOUT_ON_PROGRESS) {
-                    requestOptions.resetTimeoutOnProgress = 
-                        process.env.MCP_RESET_TIMEOUT_ON_PROGRESS.toLowerCase() === 'true';
-                    this.logger.debug(`Setting resetTimeoutOnProgress: \${requestOptions.resetTimeoutOnProgress}`);
-                }
-
-                // Read maxTotalTimeout from environment
-                if (process.env.MCP_MAX_TOTAL_TIMEOUT_MS) {
-                    const maxTimeoutMs = parseInt(process.env.MCP_MAX_TOTAL_TIMEOUT_MS, 10);
-                    if (!isNaN(maxTimeoutMs) && maxTimeoutMs > 0) {
-                        requestOptions.maxTotalTimeout = maxTimeoutMs;
-                        this.logger.debug(`Using custom max total timeout: \${maxTimeoutMs}ms`);
-                    }
-                }
-
-                // Only pass requestOptions if we have any options set
-                if (Object.keys(requestOptions).length > 0) {
-                    await client.connect(transport, requestOptions);
-                    this.logger.debug('Client connected to MCP server with custom request options');
-                } else {
-                    await client.connect(transport);
-                    this.logger.debug('Client connected to MCP server with default options');
-                }
+                await client.connect(transport);
+				this.logger.debug('Client connected to MCP server');
 			} catch (connectionError) {
 				this.logger.error(`MCP client connection error: ${(connectionError as Error).message}`);
 				throw new NodeOperationError(
 					this.getNode(),
 					`Failed to connect to MCP server: ${(connectionError as Error).message}`,
 				);
+			}
+
+			// Create a RequestOptions object from environment variables
+			const requestOptions: RequestOptions = {};
+
+			// Read timeout from environment
+			if (process.env.MCP_REQUEST_TIMEOUT_MS) {
+				const timeoutMs = parseInt(process.env.MCP_REQUEST_TIMEOUT_MS, 10);
+				if (!isNaN(timeoutMs) && timeoutMs > 0) {
+					requestOptions.timeout = timeoutMs;
+					this.logger.debug(`Using custom request timeout: \${timeoutMs}ms`);
+				}
+			}
+
+			// Read resetTimeoutOnProgress from environment
+			if (process.env.MCP_RESET_TIMEOUT_ON_PROGRESS) {
+				requestOptions.resetTimeoutOnProgress = 
+					process.env.MCP_RESET_TIMEOUT_ON_PROGRESS.toLowerCase() === 'true';
+				this.logger.debug(`Setting resetTimeoutOnProgress: \${requestOptions.resetTimeoutOnProgress}`);
+			}
+
+			// Read maxTotalTimeout from environment
+			if (process.env.MCP_MAX_TOTAL_TIMEOUT_MS) {
+				const maxTimeoutMs = parseInt(process.env.MCP_MAX_TOTAL_TIMEOUT_MS, 10);
+				if (!isNaN(maxTimeoutMs) && maxTimeoutMs > 0) {
+					requestOptions.maxTotalTimeout = maxTimeoutMs;
+					this.logger.debug(`Using custom max total timeout: \${maxTimeoutMs}ms`);
+				}
 			}
 
 			switch (operation) {
@@ -467,10 +461,7 @@ export class McpClient implements INodeType {
 									const result = await client.callTool({
 										name: tool.name,
 										arguments: params,
-									}, CallToolResultSchema, {
-										// TODO: Support these options using the N8N's Node Config UI
-										// resetTimeoutOnProgress: true,
-									});
+									}, CallToolResultSchema, requestOptions);
 
 									return typeof result === 'object' ? JSON.stringify(result) : String(result);
 								} catch (error) {
@@ -572,10 +563,7 @@ export class McpClient implements INodeType {
 						const result = await client.callTool({
 							name: toolName,
 							arguments: toolParams,
-						}, CallToolResultSchema, {
-							// TODO: Support these options using the N8N's Node Config UI
-							// resetTimeoutOnProgress: true,
-						});
+						}, CallToolResultSchema, requestOptions);
 
 						this.logger.debug(`Tool executed successfully: ${JSON.stringify(result)}`);
 

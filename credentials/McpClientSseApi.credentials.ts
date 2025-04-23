@@ -17,6 +17,14 @@ export class McpClientSseApi implements ICredentialType {
 			description: 'URL of the SSE endpoint for the MCP server',
 		},
 		{
+			displayName: 'SSE Connection Timeout',
+			name: 'sseTimeout',
+			type: 'number',
+			default: 60000,
+			required: false,
+			description: 'Timeout for the SSE connection in milliseconds. Default is 60 seconds.',
+		},
+		{
 			displayName: 'Messages Post Endpoint',
 			name: 'messagesPostEndpoint',
 			type: 'string',

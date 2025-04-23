@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-mcp",
-	"version": "0.1.20",
+	"version": "0.1.21",
 	"description": "MCP nodes for n8n ",
 	"keywords": [
 		"n8n-community-node-package",

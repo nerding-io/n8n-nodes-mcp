@@ -195,6 +195,7 @@ export class McpClient implements INodeType {
 			// If connectionType parameter doesn't exist, keep default 'cmd'
 			this.logger.debug('ConnectionType parameter not found, using default "cmd" transport');
 		}
+		let timeout = 600000;
 
 		try {
 
@@ -207,6 +208,7 @@ export class McpClient implements INodeType {
 
 				const sseUrl = sseCredentials.sseUrl as string;
 				const messagesPostEndpoint = (sseCredentials.messagesPostEndpoint as string) || '';
+				timeout = sseCredentials.sseTimeout as number || 60000;
 
 				// Parse headers
 				let headers: Record<string, string> = {};
@@ -337,15 +339,7 @@ export class McpClient implements INodeType {
 
 			// Create a RequestOptions object from environment variables
 			const requestOptions: RequestOptions = {};
-
-			// Read timeout from environment
-			if (process.env.MCP_REQUEST_TIMEOUT_MS) {
-				const timeoutMs = parseInt(process.env.MCP_REQUEST_TIMEOUT_MS, 10);
-				if (!isNaN(timeoutMs) && timeoutMs > 0) {
-					requestOptions.timeout = timeoutMs;
-					this.logger.debug(`Using custom request timeout: \${timeoutMs}ms`);
-				}
-			}
+			requestOptions.timeout = timeout;
 
 			switch (operation) {
 				case 'listResources': {

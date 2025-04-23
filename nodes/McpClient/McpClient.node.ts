@@ -347,22 +347,6 @@ export class McpClient implements INodeType {
 				}
 			}
 
-			// Read resetTimeoutOnProgress from environment
-			if (process.env.MCP_RESET_TIMEOUT_ON_PROGRESS) {
-				requestOptions.resetTimeoutOnProgress = 
-					process.env.MCP_RESET_TIMEOUT_ON_PROGRESS.toLowerCase() === 'true';
-				this.logger.debug(`Setting resetTimeoutOnProgress: \${requestOptions.resetTimeoutOnProgress}`);
-			}
-
-			// Read maxTotalTimeout from environment
-			if (process.env.MCP_MAX_TOTAL_TIMEOUT_MS) {
-				const maxTimeoutMs = parseInt(process.env.MCP_MAX_TOTAL_TIMEOUT_MS, 10);
-				if (!isNaN(maxTimeoutMs) && maxTimeoutMs > 0) {
-					requestOptions.maxTotalTimeout = maxTimeoutMs;
-					this.logger.debug(`Using custom max total timeout: \${maxTimeoutMs}ms`);
-				}
-			}
-
 			switch (operation) {
 				case 'listResources': {
 					const resources = await client.listResources();

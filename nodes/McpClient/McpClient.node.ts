@@ -213,7 +213,7 @@ export class McpClient implements INodeType {
 				// Parse headers
 				let headers: Record<string, string> = {};
 				if (sseCredentials.headers) {
-					const headersPairs = (sseCredentials.headers as string).split(/[,\n\s]+/);
+					const headersPairs = (sseCredentials.headers as string).split(/[\n,]+/);
 					for (const pair of headersPairs) {
 						const trimmedPair = pair.trim();
 						if (trimmedPair) {

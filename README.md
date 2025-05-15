@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/nerding-io-n8n-nodes-mcp-badge.png)](https://mseep.ai/app/nerding-io-n8n-nodes-mcp)
+
 # n8n-nodes-mcp-client
 
 This is an n8n community node that lets you interact with Model Context Protocol (MCP) servers in your n8n workflows.

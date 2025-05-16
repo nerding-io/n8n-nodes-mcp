@@ -2,6 +2,9 @@
 
 # n8n-nodes-mcp-client
 
+> **Important Note:**
+> As of version X.X.X, the Server-Sent Events (SSE) transport is deprecated and replaced by the new HTTP Streamable transport. SSE remains available for legacy compatibility, but HTTP Streamable is now the recommended method for all new implementations.
+
 This is an n8n community node that lets you interact with Model Context Protocol (MCP) servers in your n8n workflows.
 
 MCP is a protocol that enables AI models to interact with external tools and data sources in a standardized way. This node allows you to connect to MCP servers, access resources, execute tools, and use prompts.
@@ -47,7 +50,7 @@ Also pay attention to Environment Variables for [using tools in AI Agents](#usin
 
 ## Credentials
 
-The MCP Client node supports two types of credentials to connect to an MCP server:
+The MCP Client node supports three types of credentials to connect to an MCP server:
 
 ### Command-line Based Transport (STDIO)
 
@@ -57,13 +60,64 @@ The MCP Client node supports two types of credentials to connect to an MCP serve
 - **Arguments**: Optional arguments to pass to the server command
 - **Environment Variables**: Variables to pass to the server in NAME=VALUE format
 
-### Server-Sent Events (SSE) Transport
+### HTTP Streamable Transport (Recommended)
 
-![MCP Client SSE Credentials](./assets/sse-credentials.png)
+- **HTTP Streamable URL**: The HTTP endpoint that supports streaming responses (e.g., http://localhost:3001/stream)
+- **Additional Headers**: Optional headers to send with requests (format: name:value, one per line)
+
+HTTP Streamable is the recommended and modern method for all new integrations, providing better efficiency and flexibility compared to SSE.
+
+#### Example: Using a Local MCP Server with HTTP Streamable
+
+This example shows how to connect to a locally running MCP server using HTTP Streamable:
+
+1. Start a local MCP server that supports HTTP Streamable:
+   ```bash
+   npx @modelcontextprotocol/server-example-streamable
+   ```
+
+2. Configure MCP Client credentials:
+   - In the node settings, select **Connection Type**: `HTTP Streamable`
+   - Create new credentials of type **MCP Client (HTTP Streamable) API**
+   - Set **HTTP Streamable URL**: `http://localhost:3001/stream`
+   - Add any required headers for authentication
+
+3. Create a workflow using the MCP Client node:
+   - Add an MCP Client node
+   - Set the Connection Type to `HTTP Streamable`
+   - Select your HTTP Streamable credentials
+   - Execute the workflow to see the results
+
+### Server-Sent Events (SSE) Transport (Deprecated, still available for legacy use)
 
 - **SSE URL**: The URL of the SSE endpoint (default: http://localhost:3001/sse)
 - **Messages Post Endpoint**: Optional custom endpoint for posting messages if different from the SSE URL
 - **Additional Headers**: Optional headers to send with requests (format: name:value, one per line)
+
+> **Deprecated:** SSE is deprecated and will not receive further updates, but remains available for legacy compatibility. For new projects, use HTTP Streamable.
+
+#### Example: Using a Local MCP Server with SSE (legacy)
+
+This example shows how to connect to a locally running MCP server using Server-Sent Events (SSE):
+
+1. Start a local MCP server that supports SSE:
+   ```bash
+   npx @modelcontextprotocol/server-example-sse
+   ```
+
+2. Configure MCP Client credentials:
+   - In the node settings, select **Connection Type**: `Server-Sent Events (SSE)`
+   - Create new credentials of type **MCP Client (SSE) API**
+   - Set **SSE URL**: `http://localhost:3001/sse`
+   - Add any required headers for authentication
+
+3. Create a workflow using the MCP Client node:
+   - Add an MCP Client node
+   - Set the Connection Type to `Server-Sent Events (SSE)`
+   - Select your SSE credentials
+   - Execute the workflow to see the results
+
+> **Note:** For new projects, HTTP Streamable is strongly recommended.
 
 ## Environment Variables
 
@@ -183,38 +237,6 @@ Finally, find some recent news about travel restrictions for these places.
 ```
 
 With this setup, the AI agent can use multiple MCP tools across different servers, all using environment variables configured in your Docker deployment.
-
-### Example: Using a Local MCP Server with SSE
-
-This example shows how to connect to a locally running MCP server using Server-Sent Events (SSE):
-
-1. Start a local MCP server that supports SSE:
-   ```bash
-   npx @modelcontextprotocol/server-example-sse
-   ```
-
-   Or run your own custom MCP server with SSE support on port 3001.
-
-2. Configure MCP Client credentials:
-   - In the node settings, select **Connection Type**: `Server-Sent Events (SSE)`
-   - Create new credentials of type **MCP Client (SSE) API**
-   - Set **SSE URL**: `http://localhost:3001/sse`
-   - Add any required headers if your server needs authentication
-
-3. Create a workflow that uses the MCP Client node:
-   - Add an MCP Client node
-   - Set the Connection Type to `Server-Sent Events (SSE)`
-   - Select your SSE credentials
-   - Select the "List Tools" operation to see available tools
-   - Execute the workflow to see the results
-
-![SSE Example](./assets/sse-example.png)
-
-This method is particularly useful when:
-- Your MCP server is running as a standalone service
-- You're connecting to a remote MCP server
-- Your server requires special authentication headers
-- You need to separate the transport channel from the message channel
 
 ## Operations
 

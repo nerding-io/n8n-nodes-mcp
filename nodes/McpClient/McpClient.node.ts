@@ -8,7 +8,6 @@ import {
 } from 'n8n-workflow';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { RequestOptions } from '@modelcontextprotocol/sdk/shared/protocol';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
@@ -56,6 +55,15 @@ export class McpClient implements INodeType {
 					},
 				},
 			},
+			{
+				name: 'mcpClientHttpApi',
+				required: false,
+				displayOptions: {
+					show: {
+						connectionType: ['http'],
+					},
+				},
+			},
 		],
 		properties: [
 			{
@@ -70,6 +78,12 @@ export class McpClient implements INodeType {
 					{
 						name: 'Server-Sent Events (SSE)',
 						value: 'sse',
+						description: 'Deprecated: Use HTTP Streamable instead',
+					},
+					{
+						name: 'HTTP Streamable',
+						value: 'http',
+						description: 'Use HTTP streamable protocol for real-time communication',
 					},
 				],
 				default: 'cmd',
@@ -198,8 +212,46 @@ export class McpClient implements INodeType {
 		let timeout = 600000;
 
 		try {
+			if (connectionType === 'http') {
+				// Use HTTP Streamable transport
+				const httpCredentials = await this.getCredentials('mcpClientHttpApi');
 
-			if (connectionType === 'sse') {
+				// Dynamically import the HTTP client
+				const { StreamableHTTPClientTransport } = await import('@modelcontextprotocol/sdk/client/streamableHttp.js');
+
+				const httpStreamUrl = httpCredentials.httpStreamUrl as string;
+				const messagesPostEndpoint = (httpCredentials.messagesPostEndpoint as string) || '';
+				timeout = httpCredentials.httpTimeout as number || 60000;
+
+				// Parse headers
+				let headers: Record<string, string> = {};
+				if (httpCredentials.headers) {
+					const headersPairs = (httpCredentials.headers as string).split(/[\n,]+/);
+					for (const pair of headersPairs) {
+						const trimmedPair = pair.trim();
+						if (trimmedPair) {
+							const equalsIndex = trimmedPair.indexOf('=');
+							if (equalsIndex > 0) {
+								const name = trimmedPair.substring(0, equalsIndex).trim();
+								const value = trimmedPair.substring(equalsIndex + 1).trim();
+								if (name && value !== undefined) {
+									headers[name] = value;
+								}
+							}
+						}
+					}
+				}
+
+				const requestInit: RequestInit = { headers };
+				if (messagesPostEndpoint) {
+					(requestInit as any).endpoint = new URL(messagesPostEndpoint);
+				}
+
+				transport = new StreamableHTTPClientTransport(
+					new URL(httpStreamUrl),
+					{ requestInit }
+				);
+			} else if (connectionType === 'sse') {
 				// Use SSE transport
 				const sseCredentials = await this.getCredentials('mcpClientSseApi');
 
@@ -307,9 +359,11 @@ export class McpClient implements INodeType {
 			}
 
 			// Add error handling to transport
-			transport.onerror = (error) => {
-				throw new NodeOperationError(this.getNode(), `Transport error: ${error}`);
-			};
+			if (transport) {
+				transport.onerror = (error: Error) => {
+					throw new NodeOperationError(this.getNode(), `Transport error: ${error.message}`);
+				};
+			}
 
 			const client = new Client(
 				{
@@ -320,14 +374,16 @@ export class McpClient implements INodeType {
 					capabilities: {
 						prompts: {},
 						resources: {},
-
 						tools: {},
 					},
 				},
 			);
 
 			try {
-                await client.connect(transport);
+				if (!transport) {
+					throw new NodeOperationError(this.getNode(), 'No transport available');
+				}
+				await client.connect(transport);
 				this.logger.debug('Client connected to MCP server');
 			} catch (connectionError) {
 				this.logger.error(`MCP client connection error: ${(connectionError as Error).message}`);
@@ -464,7 +520,7 @@ export class McpClient implements INodeType {
 							tools: aiTools.map((t: DynamicStructuredTool) => ({
 								name: t.name,
 								description: t.description,
-								schema: zodToJsonSchema(t.schema || {}),
+								schema: t.schema || z.object({}),
 							})),
 						},
 					});

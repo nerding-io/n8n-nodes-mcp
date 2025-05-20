@@ -3,7 +3,7 @@
 # n8n-nodes-mcp-client
 
 > **Important Note:**
-> As of version X.X.X, the Server-Sent Events (SSE) transport is deprecated and replaced by the new HTTP Streamable transport. SSE remains available for legacy compatibility, but HTTP Streamable is now the recommended method for all new implementations.
+> The Server-Sent Events (SSE) transport is deprecated and replaced by the new HTTP Streamable transport. SSE remains available for legacy compatibility, but HTTP Streamable is now the recommended method for all new implementations.
 
 This is an n8n community node that lets you interact with Model Context Protocol (MCP) servers in your n8n workflows.
 

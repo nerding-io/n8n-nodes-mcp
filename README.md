@@ -1,4 +1,4 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/nerding-io-n8n-nodes-mcp-badge.png)](https://mseep.ai/app/nerding-io-n8n-nodes-mcp)
+[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/bd76f121-1c8f-4f5d-9c65-1eac5d81b6af)
 
 # n8n-nodes-mcp-client
 
@@ -25,6 +25,8 @@ Official Quickstart Video:
 
 [![MCP Client Node Quickstart](/assets/mcp-n8n.png)](https://youtu.be/1t8DQL-jUJk)
 
+
+
 ### Community Videos
 
 Shoutout to all the creators of the following n8n community videos that are great resources for learning how to use this node:
@@ -41,6 +43,10 @@ If you have a great video that you'd like to share, please let me know and I'll 
 #### Interested a deeper dive into MCP?
 
 Check out my YouTube Series [MCP Explained](https://www.youtube.com/playlist?list=PLjOCx_PNfJ4S_oOSqrMi6t9_x1GllvQZO) for more information about the Model Context Protocol.
+
+### Security Assessment
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/nerding-io-n8n-nodes-mcp-badge.png)](https://mseep.ai/app/nerding-io-n8n-nodes-mcp)
+
 
 ## Installation
 

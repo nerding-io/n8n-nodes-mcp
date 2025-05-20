@@ -8,5 +8,6 @@ module.exports = {
 	credentialTypes: {
 		mcpClientApi: require('./dist/credentials/McpClientApi.credentials.js').McpClientApi,
 		mcpClientSseApi: require('./dist/credentials/McpClientSseApi.credentials.js').McpClientSseApi,
+		mcpClientHttpApi: require('./dist/credentials/McpClientHttpApi.credentials.js').McpClientHttpApi,
 	},
 };

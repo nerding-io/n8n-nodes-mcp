@@ -223,34 +223,3 @@ describe('McpClient Node - Credentials Parsing', () => {
 		});
 	});
 });
-
-// Minimal expect function for conceptual testing if no framework is present
-// In a real environment, a test runner like Jest would provide this.
-function expect(actual: any) {
-	return {
-		toEqual: (expected: any) => {
-			const actualJson = JSON.stringify(actual);
-			const expectedJson = JSON.stringify(expected);
-			if (actualJson !== expectedJson) {
-				throw new Error(`Expected ${expectedJson} but received ${actualJson}`);
-			}
-		},
-	};
-}
-// The describe and it functions would also be provided by a test framework.
-// For this conceptual outline, they are just for structure.
-function describe(name: string, fn: () => void) {
-	// console.log(`DESCRIBE: ${name}`);
-	fn();
-}
-function it(name: string, fn: () => void) {
-	try {
-		// console.log(`  IT: ${name}`);
-		fn();
-		// console.log(`  PASS: ${name}`);
-	} catch (e: any) {
-		// console.error(`  FAIL: ${name}`);
-		// console.error(e.message);
-		throw e; // Re-throw to make it clear a test failed if running in a context that cares
-	}
-}

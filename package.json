@@ -1,72 +1,74 @@
 {
-	"name": "n8n-nodes-mcp",
-	"version": "0.1.26",
-	"description": "MCP nodes for n8n ",
-	"keywords": [
-		"n8n-community-node-package",
-		"mcp",
-		"mcp-client",
-		"mcp-client-node",
-		"mcp-client-n8n",
-		"mcp-client-n8n-node",
-		"mcp-client-n8n-node-package"
-	],
-	"license": "MIT",
-	"homepage": "",
-	"author": {
-		"name": "Jd Fiscus",
-		"email": "jd@nerding.io"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/nerding-io/n8n-nodes-mcp.git"
-	},
-	"main": "index.js",
-	"scripts": {
-		"build": "tsc && gulp build:icons",
-		"dev": "tsc --watch",
-		"format": "prettier nodes credentials --write",
-		"lint": "eslint nodes credentials package.json",
-		"lintfix": "eslint nodes credentials package.json --fix",
-		"prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json",
-		"test": "jest"
-	},
-	"files": [
-		"dist"
-	],
-	"n8n": {
-		"n8nNodesApiVersion": 1,
-		"credentials": [
-			"dist/credentials/McpClientApi.credentials.js",
-			"dist/credentials/McpClientSseApi.credentials.js",
-			"dist/credentials/McpClientHttpApi.credentials.js"
-		],
-		"nodes": [
-			"dist/nodes/McpClient/McpClient.node.js"
-		]
-	},
-	"devDependencies": {
-		"@types/jest": "^29.5.14",
-		"@typescript-eslint/parser": "~5.45",
-		"eslint": "^8.57.1",
-		"eslint-plugin-n8n-nodes-base": "^1.11.0",
-		"gulp": "^4.0.2",
-		"jest": "^29.7.0",
-		"n8n-workflow": "*",
-		"prettier": "^2.7.1",
-		"ts-jest": "^29.2.6",
-		"typescript": "~4.8.4"
-	},
-	"dependencies": {
-		"@langchain/core": "^0.3.43",
-		"@modelcontextprotocol/sdk": "^1.10.2",
-		"zod": "^3.24.0",
-		"zod-to-json-schema": "^3.24.0"
-	},
-	"overrides": {
-		"pkce-challenge": "3.0.0"
-	},
-	"peerDependencies": {
-		"n8n-workflow": "*"
-	}
+  "name": "n8n-nodes-mcp-jsonfix",
+  "version": "0.1.26",
+  "description": "MCP nodes for n8n with improved JSON parsing using parseKeyValuePairs.",
+  "keywords": [
+    "n8n-community-node-package",
+    "mcp",
+    "mcp-client",
+    "mcp-client-node",
+    "mcp-client-n8n",
+    "mcp-client-n8n-node",
+    "mcp-client-n8n-node-package",
+    "jsonfix",
+    "parseKeyValuePairs"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "author": {
+    "name": "Loïs Perrigon",
+    "email": "lois@example.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/loisperrigon/n8n-nodes-mcp-jsonfix.git"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "format": "prettier nodes credentials --write",
+    "lint": "eslint nodes credentials package.json",
+    "lintfix": "eslint nodes credentials package.json --fix",
+    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json",
+    "test": "jest"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/McpClientApi.credentials.js",
+      "dist/credentials/McpClientSseApi.credentials.js",
+      "dist/credentials/McpClientHttpApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/McpClient/McpClient.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@typescript-eslint/parser": "~5.45",
+    "eslint": "^8.57.1",
+    "eslint-plugin-n8n-nodes-base": "^1.11.0",
+    "gulp": "^4.0.2",
+    "jest": "^29.7.0",
+    "n8n-workflow": "*",
+    "prettier": "^2.7.1",
+    "ts-jest": "^29.2.6",
+    "typescript": "~4.8.4"
+  },
+  "dependencies": {
+    "@langchain/core": "^0.3.43",
+    "@modelcontextprotocol/sdk": "^1.10.2",
+    "zod": "^3.24.0",
+    "zod-to-json-schema": "^3.24.0"
+  },
+  "overrides": {
+    "pkce-challenge": "3.0.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
 }

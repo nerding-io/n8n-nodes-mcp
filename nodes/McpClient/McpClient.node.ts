@@ -226,17 +226,16 @@ export class McpClient implements INodeType {
 				// Parse headers
 				let headers: Record<string, string> = {};
 				if (httpCredentials.headers) {
-					const headersPairs = (httpCredentials.headers as string).split(/[\n,]+/);
-					for (const pair of headersPairs) {
-						const trimmedPair = pair.trim();
-						if (trimmedPair) {
-							const equalsIndex = trimmedPair.indexOf('=');
-							if (equalsIndex > 0) {
-								const name = trimmedPair.substring(0, equalsIndex).trim();
-								const value = trimmedPair.substring(equalsIndex + 1).trim();
-								if (name && value !== undefined) {
-									headers[name] = value;
-								}
+					const headerLines = (httpCredentials.headers as string).split('\n');
+					for (const line of headerLines) {
+						const equalsIndex = line.indexOf('=');
+						// Ensure '=' is present and not the first character of the line
+						if (equalsIndex > 0) {
+							const name = line.substring(0, equalsIndex).trim();
+							const value = line.substring(equalsIndex + 1).trim();
+							// Add to headers object if key is not empty and value is defined
+							if (name && value !== undefined) {
+								headers[name] = value;
 							}
 						}
 					}
@@ -265,17 +264,16 @@ export class McpClient implements INodeType {
 				// Parse headers
 				let headers: Record<string, string> = {};
 				if (sseCredentials.headers) {
-					const headersPairs = (sseCredentials.headers as string).split(/[\n,]+/);
-					for (const pair of headersPairs) {
-						const trimmedPair = pair.trim();
-						if (trimmedPair) {
-							const equalsIndex = trimmedPair.indexOf('=');
-							if (equalsIndex > 0) {
-								const name = trimmedPair.substring(0, equalsIndex).trim();
-								const value = trimmedPair.substring(equalsIndex + 1).trim();
-								if (name && value !== undefined) {
-									headers[name] = value;
-								}
+					const headerLines = (sseCredentials.headers as string).split('\n');
+					for (const line of headerLines) {
+						const equalsIndex = line.indexOf('=');
+						// Ensure '=' is present and not the first character of the line
+						if (equalsIndex > 0) {
+							const name = line.substring(0, equalsIndex).trim();
+							const value = line.substring(equalsIndex + 1).trim();
+							// Add to headers object if key is not empty and value is defined
+							if (name && value !== undefined) {
+								headers[name] = value;
 							}
 						}
 					}
@@ -317,19 +315,18 @@ export class McpClient implements INodeType {
 
 				this.logger.debug(`Original PATH: ${process.env.PATH}`);
 
-				// Parse comma-separated environment variables from credentials
+				// Parse newline-separated environment variables from credentials
 				if (cmdCredentials.environments) {
-					const envPairs = (cmdCredentials.environments as string).split(/[,\n\s]+/);
-					for (const pair of envPairs) {
-						const trimmedPair = pair.trim();
-						if (trimmedPair) {
-							const equalsIndex = trimmedPair.indexOf('=');
-							if (equalsIndex > 0) {
-								const name = trimmedPair.substring(0, equalsIndex).trim();
-								const value = trimmedPair.substring(equalsIndex + 1).trim();
-								if (name && value !== undefined) {
-									env[name] = value;
-								}
+					const envLines = (cmdCredentials.environments as string).split('\n');
+					for (const line of envLines) {
+						const equalsIndex = line.indexOf('=');
+						// Ensure '=' is present and not the first character of the line
+						if (equalsIndex > 0) {
+							const name = line.substring(0, equalsIndex).trim();
+							const value = line.substring(equalsIndex + 1).trim();
+							// Add to env object if key is not empty and value is defined
+							if (name && value !== undefined) {
+								env[name] = value;
 							}
 						}
 					}

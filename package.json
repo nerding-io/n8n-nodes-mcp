@@ -62,7 +62,7 @@
 		"@langchain/core": "^0.3.62",
 		"@modelcontextprotocol/sdk": "^1.15.1",
 		"zod": "^3.25.76",
-		"zod-to-json-schema": "^3.24.0"
+		"zod-to-json-schema": "^3.24.6"
 	},
 	"overrides": {
 		"pkce-challenge": "3.0.0"

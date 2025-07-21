@@ -47,25 +47,26 @@
 	},
 	"devDependencies": {
 		"@types/jest": "^29.5.14",
-		"@types/node": "^22.15.21",
-		"@typescript-eslint/parser": "~5.45",
+		"@types/node": "^24.0.13",
+		"@typescript-eslint/parser": "~8.36",
 		"eslint": "^8.57.1",
 		"eslint-plugin-n8n-nodes-base": "^1.11.0",
-		"gulp": "^4.0.2",
+		"gulp": "^5.0.1",
 		"jest": "^29.7.0",
 		"n8n-workflow": "*",
-		"prettier": "^2.7.1",
-		"ts-jest": "^29.2.6",
-		"typescript": "~4.8.4"
+		"prettier": "^3.6.2",
+		"ts-jest": "^29.4.0",
+		"typescript": "~5.8.3"
 	},
 	"dependencies": {
-		"@langchain/core": "^0.3.43",
-		"@modelcontextprotocol/sdk": "^1.10.2",
-		"zod": "^3.24.0",
-		"zod-to-json-schema": "^3.24.0"
+		"@langchain/core": "0.3.43",
+		"@modelcontextprotocol/sdk": "^1.15.1",
+		"zod": "3.24.0",
+		"zod-to-json-schema": "^3.24.6"
 	},
 	"overrides": {
-		"pkce-challenge": "3.0.0"
+		"pkce-challenge": "3.0.0",
+		"zod": "3.24.0"
 	},
 	"peerDependencies": {
 		"n8n-workflow": "*"

@@ -91,6 +91,19 @@ export class McpClient implements INodeType {
 				description: 'Choose the transport type to connect to MCP server',
 			},
 			{
+				displayName: 'Uri Override',
+				name: 'uriOverride',
+				type: 'string',
+				required: false,
+				displayOptions: {
+					show: {
+						connectionType: ['sse', 'http'],
+					},
+				},
+				default: '',
+				description: 'Override the URL from credentials with a custom URL',
+			},
+			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
@@ -220,7 +233,9 @@ export class McpClient implements INodeType {
 				// Dynamically import the HTTP client
 				const { StreamableHTTPClientTransport } = await import('@modelcontextprotocol/sdk/client/streamableHttp.js');
 
-				const httpStreamUrl = httpCredentials.httpStreamUrl as string;
+				// Get URI override or use credentials URL
+				const uriOverride = this.getNodeParameter('uriOverride', 0) as string;
+				const httpStreamUrl = uriOverride || (httpCredentials.httpStreamUrl as string);
 				const messagesPostEndpoint = (httpCredentials.messagesPostEndpoint as string) || '';
 				timeout = httpCredentials.httpTimeout as number || 60000;
 
@@ -258,7 +273,9 @@ export class McpClient implements INodeType {
 				// Dynamically import the SSE client to avoid TypeScript errors
 				const { SSEClientTransport } = await import('@modelcontextprotocol/sdk/client/sse.js');
 
-				const sseUrl = sseCredentials.sseUrl as string;
+				// Get URI override or use credentials URL
+				const uriOverride = this.getNodeParameter('uriOverride', 0) as string;
+				const sseUrl = uriOverride || (sseCredentials.sseUrl as string);
 				const messagesPostEndpoint = (sseCredentials.messagesPostEndpoint as string) || '';
 				timeout = sseCredentials.sseTimeout as number || 60000;
 

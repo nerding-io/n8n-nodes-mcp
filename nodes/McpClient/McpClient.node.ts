@@ -286,7 +286,18 @@ export class McpClient implements INodeType {
 
 				// Get URI override or use credentials URL
 				const uriOverride = this.getNodeParameter('uriOverride', 0) as string;
-				const sseUrl = uriOverride || (sseCredentials.sseUrl as string);
+				let sseUrl: string;
+				if (uriOverride && uriOverride.trim()) {
+					try {
+						// Validate URL format
+						new URL(uriOverride.trim());
+						sseUrl = uriOverride.trim();
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), `Invalid URI override format: ${uriOverride}`);
+					}
+				} else {
+					sseUrl = sseCredentials.sseUrl as string;
+				}
 				const messagesPostEndpoint = (sseCredentials.messagesPostEndpoint as string) || '';
 				timeout = sseCredentials.sseTimeout as number || 60000;
 

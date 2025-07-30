@@ -94,7 +94,6 @@ export class McpClient implements INodeType {
 				displayName: 'Uri Override',
 				name: 'uriOverride',
 				type: 'string',
-				required: false,
 				displayOptions: {
 					show: {
 						connectionType: ['sse', 'http'],

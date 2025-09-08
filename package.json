@@ -60,7 +60,7 @@
 	},
 	"dependencies": {
 		"@langchain/core": "0.3.43",
-		"@modelcontextprotocol/sdk": "^1.15.1",
+		"@modelcontextprotocol/sdk": "^1.17.5",
 		"zod": "3.24.0",
 		"zod-to-json-schema": "^3.24.6"
 	},

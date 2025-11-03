@@ -1,6 +1,6 @@
 {
-	"name": "n8n-nodes-mcp",
-	"version": "0.1.29",
+	"name": "n8n-nodes-mcp-batch",
+	"version": "0.1.1",
 	"description": "MCP nodes for n8n ",
 	"keywords": [
 		"n8n-community-node-package",
@@ -12,14 +12,14 @@
 		"mcp-client-n8n-node-package"
 	],
 	"license": "MIT",
-	"homepage": "",
+	"homepage": "https://github.com/eonminion/n8n-nodes-mcp-batch#readme",
 	"author": {
-		"name": "Jd Fiscus",
-		"email": "jd@nerding.io"
+		"name": "Jing Chen",
+		"email": "chen@jing.best"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/nerding-io/n8n-nodes-mcp.git"
+		"url": "git+https://github.com/eonminion/n8n-nodes-mcp-batch.git"
 	},
 	"main": "index.js",
 	"scripts": {
@@ -47,7 +47,7 @@
 	},
 	"devDependencies": {
 		"@types/jest": "^29.5.14",
-		"@types/node": "^24.0.13",
+		"@types/node": "^24.10.0",
 		"@typescript-eslint/parser": "~8.36",
 		"eslint": "^8.57.1",
 		"eslint-plugin-n8n-nodes-base": "^1.11.0",
@@ -70,5 +70,8 @@
 	},
 	"peerDependencies": {
 		"n8n-workflow": "*"
+	},
+	"bugs": {
+		"url": "https://github.com/eonminion/n8n-nodes-mcp-batch/issues"
 	}
 }

@@ -209,15 +209,23 @@ export class McpClient implements INodeType {
 						name: 'batching',
 						type: 'fixedCollection',
 						placeholder: 'Add Batching',
-						default: {},
+						default: {
+							batch: {
+								batchSize: 50,
+								batchInterval: 1000,
+							},
+						},
+						typeOptions: {
+							multipleValues: false,
+						},
 						options: [
 							{
-								displayName: 'Batch',
+								displayName: '',
 								name: 'batch',
 								values: [
 									{
 										displayName: 'Items Per Batch',
-										name: 'itemsPerBatch',
+										name: 'batchSize',
 										type: 'number',
 										default: 50,
 										description: 'Number of items to process in parallel per batch',
@@ -255,16 +263,17 @@ export class McpClient implements INodeType {
 		const options = this.getNodeParameter('options', 0, {}) as {
 			batching?: {
 				batch?: {
-					itemsPerBatch?: number;
+					batchSize?: number;
 					batchInterval?: number;
 				};
 			};
 		};
 
-		// Extract batching settings or use defaults (no batching if not configured)
-		const batchingEnabled = options.batching?.batch !== undefined;
-		const itemsPerBatch = batchingEnabled ? (options.batching?.batch?.itemsPerBatch ?? 50) : items.length;
-		const batchInterval = batchingEnabled ? (options.batching?.batch?.batchInterval ?? 1000) : 0;
+		// Extract batching settings - batching is enabled if the batching option exists
+		const batchConfig = options.batching?.batch;
+		const batchingEnabled = options.batching !== undefined && batchConfig !== undefined;
+		const itemsPerBatch = batchingEnabled ? (batchConfig?.batchSize ?? 50) : items.length;
+		const batchInterval = batchingEnabled ? (batchConfig?.batchInterval ?? 1000) : 0;
 
 		// For backward compatibility - if connectionType isn't set, default to 'cmd'
 		let connectionType = 'cmd';

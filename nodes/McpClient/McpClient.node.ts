@@ -272,8 +272,12 @@ export class McpClient implements INodeType {
 		// Extract batching settings - batching is enabled if the batching option exists
 		const batchConfig = options.batching?.batch;
 		const batchingEnabled = options.batching !== undefined && batchConfig !== undefined;
-		const itemsPerBatch = batchingEnabled ? (batchConfig?.batchSize ?? 50) : items.length;
-		const batchInterval = batchingEnabled ? (batchConfig?.batchInterval ?? 1000) : 0;
+
+		// Sanitize and clamp batch configuration to prevent infinite loops and ensure valid ranges
+		const rawBatchSize = batchingEnabled ? batchConfig?.batchSize ?? 50 : items.length || 1;
+		const itemsPerBatch = Math.max(1, Math.min(1000, Number.isFinite(rawBatchSize) ? Math.floor(rawBatchSize) : 50));
+		const rawBatchInterval = batchingEnabled ? batchConfig?.batchInterval ?? 1000 : 0;
+		const batchInterval = Math.max(0, Math.min(60000, Number.isFinite(rawBatchInterval) ? Math.floor(rawBatchInterval) : 0));
 
 		// For backward compatibility - if connectionType isn't set, default to 'cmd'
 		let connectionType = 'cmd';

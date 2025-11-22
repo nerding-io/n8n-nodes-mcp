@@ -1,7 +1,7 @@
 {
-	"name": "n8n-nodes-mcp",
-	"version": "0.1.29",
-	"description": "MCP nodes for n8n ",
+	"name": "@havebeenfitz/n8n-nodes-mcp",
+	"version": "0.1.30",
+	"description": "MCP nodes for n8n (forked with zod/v3 fix)",
 	"keywords": [
 		"n8n-community-node-package",
 		"mcp",
@@ -12,14 +12,14 @@
 		"mcp-client-n8n-node-package"
 	],
 	"license": "MIT",
-	"homepage": "",
+	"homepage": "https://github.com/havebeenfitz/n8n-nodes-mcp",
 	"author": {
 		"name": "Jd Fiscus",
 		"email": "jd@nerding.io"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/nerding-io/n8n-nodes-mcp.git"
+		"url": "https://github.com/havebeenfitz/n8n-nodes-mcp.git"
 	},
 	"main": "index.js",
 	"scripts": {

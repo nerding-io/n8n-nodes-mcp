@@ -94,6 +94,18 @@ export class McpClient implements INodeType {
 				description: 'Choose the transport type to connect to MCP server',
 			},
 			{
+				displayName: 'Uri Override',
+				name: 'uriOverride',
+				type: 'string',
+				displayOptions: {
+					show: {
+						connectionType: ['sse', 'http'],
+					},
+				},
+				default: '',
+				description: 'Override the URL from credentials with a custom URL',
+			},
+			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
@@ -297,7 +309,21 @@ export class McpClient implements INodeType {
 				// Dynamically import the HTTP client
 				const { StreamableHTTPClientTransport } = await import('@modelcontextprotocol/sdk/client/streamableHttp.js');
 
-				const httpStreamUrl = httpCredentials.httpStreamUrl as string;
+				// Get URI override or use credentials URL
+				const uriOverride = this.getNodeParameter('uriOverride', 0) as string;
+				let httpStreamUrl: string;
+
+				if (uriOverride && uriOverride.trim()) {
+					try {
+						// Validate URL format
+						new URL(uriOverride.trim());
+						httpStreamUrl = uriOverride.trim();
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), `Invalid URI override format: ${uriOverride}`);
+					}
+				} else {
+					httpStreamUrl = httpCredentials.httpStreamUrl as string;
+				}
 				const messagesPostEndpoint = (httpCredentials.messagesPostEndpoint as string) || '';
 				timeout = httpCredentials.httpTimeout as number || 60000;
 
@@ -335,7 +361,20 @@ export class McpClient implements INodeType {
 				// Dynamically import the SSE client to avoid TypeScript errors
 				const { SSEClientTransport } = await import('@modelcontextprotocol/sdk/client/sse.js');
 
-				const sseUrl = sseCredentials.sseUrl as string;
+				// Get URI override or use credentials URL
+				const uriOverride = this.getNodeParameter('uriOverride', 0) as string;
+				let sseUrl: string;
+				if (uriOverride && uriOverride.trim()) {
+					try {
+						// Validate URL format
+						new URL(uriOverride.trim());
+						sseUrl = uriOverride.trim();
+					} catch (error) {
+						throw new NodeOperationError(this.getNode(), `Invalid URI override format: ${uriOverride}`);
+					}
+				} else {
+					sseUrl = sseCredentials.sseUrl as string;
+				}
 				const messagesPostEndpoint = (sseCredentials.messagesPostEndpoint as string) || '';
 				timeout = sseCredentials.sseTimeout as number || 60000;
 

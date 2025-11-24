@@ -20,6 +20,9 @@ declare const process: {
 	env: Record<string, string | undefined>;
 };
 
+// Add Node.js setTimeout type declaration
+declare function setTimeout(callback: () => void, ms: number): NodeJS.Timeout;
+
 export class McpClient implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'MCP Client',
@@ -206,13 +209,87 @@ export class McpClient implements INodeType {
 				default: '',
 				description: 'Name of the prompt template to get',
 			},
+			{
+				displayName: 'Options',
+				name: 'options',
+				type: 'collection',
+				placeholder: 'Add option',
+				default: {},
+				options: [
+					{
+						displayName: 'Batching',
+						name: 'batching',
+						type: 'fixedCollection',
+						placeholder: 'Add Batching',
+						default: {
+							batch: {
+								batchSize: 50,
+								batchInterval: 1000,
+							},
+						},
+						typeOptions: {
+							multipleValues: false,
+						},
+						options: [
+							{
+								displayName: '',
+								name: 'batch',
+								values: [
+									{
+										displayName: 'Items Per Batch',
+										name: 'batchSize',
+										type: 'number',
+										default: 50,
+										description: 'Number of items to process in parallel per batch',
+										typeOptions: {
+											minValue: 1,
+											maxValue: 1000,
+										},
+									},
+									{
+										displayName: 'Batch Interval (MS)',
+										name: 'batchInterval',
+										type: 'number',
+										default: 1000,
+										description: 'Time to wait between batches in milliseconds',
+										typeOptions: {
+											minValue: 0,
+											maxValue: 60000,
+										},
+									},
+								],
+							},
+						],
+					},
+				],
+			},
 		],
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
-		const operation = this.getNodeParameter('operation', 0) as string;
 		let transport: Transport | undefined;
+
+		// Get batching configuration from options (disabled by default)
+		const options = this.getNodeParameter('options', 0, {}) as {
+			batching?: {
+				batch?: {
+					batchSize?: number;
+					batchInterval?: number;
+				};
+			};
+		};
+
+		// Extract batching settings - batching is enabled if the batching option exists
+		const batchConfig = options.batching?.batch;
+		const batchingEnabled = options.batching !== undefined && batchConfig !== undefined;
+
+		// Sanitize and clamp batch configuration to prevent infinite loops and ensure valid ranges
+		const rawBatchSize = batchingEnabled ? batchConfig?.batchSize ?? 50 : items.length || 1;
+		const itemsPerBatch = Math.max(1, Math.min(1000, Number.isFinite(rawBatchSize) ? Math.floor(rawBatchSize) : 50));
+		const rawBatchInterval = batchingEnabled ? batchConfig?.batchInterval ?? 1000 : 0;
+		const batchInterval = Math.max(0, Math.min(60000, Number.isFinite(rawBatchInterval) ? Math.floor(rawBatchInterval) : 0));
 
 		// For backward compatibility - if connectionType isn't set, default to 'cmd'
 		let connectionType = 'cmd';
@@ -434,191 +511,194 @@ export class McpClient implements INodeType {
 			const requestOptions: RequestOptions = {};
 			requestOptions.timeout = timeout;
 
-			switch (operation) {
-				case 'listResources': {
-					const resources = await client.listResources();
-					returnData.push({
-						json: { resources },
-					});
-					break;
-				}
+			// Helper function to process a single item
+			const processItem = async (itemIndex: number): Promise<INodeExecutionData> => {
+				const operation = this.getNodeParameter('operation', itemIndex) as string;
 
-				case 'listResourceTemplates': {
-					const resourceTemplates = await client.listResourceTemplates();
-					returnData.push({
-						json: { resourceTemplates },
-					});
-					break;
-				}
-
-				case 'readResource': {
-					const uri = this.getNodeParameter('resourceUri', 0) as string;
-					const resource = await client.readResource({
-						uri,
-					});
-					returnData.push({
-						json: { resource },
-					});
-					break;
-				}
-
-				case 'listTools': {
-					const rawTools = await client.listTools();
-					const tools = Array.isArray(rawTools)
-						? rawTools
-						: Array.isArray(rawTools?.tools)
-							? rawTools.tools
-							: typeof rawTools?.tools === 'object' && rawTools.tools !== null
-							? Object.values(rawTools.tools)
-							: [];
-
-					if (!tools.length) {
-						this.logger.warn('No tools found from MCP client response.');
-						throw new NodeOperationError(this.getNode(), 'No tools found from MCP client');
+				switch (operation) {
+					case 'listResources': {
+						const resources = await client.listResources();
+						return {
+							json: { resources },
+							pairedItem: { item: itemIndex },
+						};
 					}
 
-					const aiTools = tools.map((tool: any) => {
-						const paramSchema = tool.inputSchema?.properties
-							? z.object(
-								Object.entries(tool.inputSchema.properties).reduce(
-									(acc: any, [key, prop]: [string, any]) => {
-										let zodType: z.ZodType;
+					case 'listResourceTemplates': {
+						const resourceTemplates = await client.listResourceTemplates();
+						return {
+							json: { resourceTemplates },
+							pairedItem: { item: itemIndex },
+						};
+					}
 
-										switch (prop.type) {
-											case 'string':
-												zodType = z.string();
-												break;
-											case 'number':
-												zodType = z.number();
-												break;
-											case 'integer':
-												zodType = z.number().int();
-												break;
-											case 'boolean':
-												zodType = z.boolean();
-												break;
-											case 'array':
-												if (prop.items?.type === 'string') {
-													zodType = z.array(z.string());
-												} else if (prop.items?.type === 'number') {
-													zodType = z.array(z.number());
-												} else if (prop.items?.type === 'boolean') {
-													zodType = z.array(z.boolean());
-												} else {
-													zodType = z.array(z.any());
-												}
-												break;
-											case 'object':
-												zodType = z.record(z.string(), z.any());
-												break;
-											default:
-												zodType = z.any();
-										}
+					case 'readResource': {
+						const uri = this.getNodeParameter('resourceUri', itemIndex) as string;
+						const resource = await client.readResource({
+							uri,
+						});
+						return {
+							json: { resource },
+							pairedItem: { item: itemIndex },
+						};
+					}
 
-										if (prop.description) {
-											zodType = zodType.describe(prop.description);
-										}
+						case 'listTools': {
+						const rawTools = await client.listTools();
+						const tools = Array.isArray(rawTools)
+							? rawTools
+							: Array.isArray(rawTools?.tools)
+								? rawTools.tools
+								: typeof rawTools?.tools === 'object' && rawTools.tools !== null
+								? Object.values(rawTools.tools)
+								: [];
 
-										if (!tool.inputSchema?.required?.includes(key)) {
-											zodType = zodType.optional();
-										}
+						if (!tools.length) {
+							this.logger.warn('No tools found from MCP client response.');
+							throw new NodeOperationError(this.getNode(), 'No tools found from MCP client');
+						}
 
-										return {
-											...acc,
-											[key]: zodType,
-										};
-									},
-									{},
-								),
-							)
-							: z.object({});
+						const aiTools = tools.map((tool: any) => {
+							const paramSchema = tool.inputSchema?.properties
+								? z.object(
+									Object.entries(tool.inputSchema.properties).reduce(
+										(acc: any, [key, prop]: [string, any]) => {
+											let zodType: z.ZodType;
 
-						return new DynamicStructuredTool({
-							name: tool.name,
-							description: tool.description || `Execute the ${tool.name} tool`,
-							schema: paramSchema,
-							func: async (params) => {
+											switch (prop.type) {
+												case 'string':
+													zodType = z.string();
+													break;
+												case 'number':
+													zodType = z.number();
+													break;
+												case 'integer':
+													zodType = z.number().int();
+													break;
+												case 'boolean':
+													zodType = z.boolean();
+													break;
+												case 'array':
+													if (prop.items?.type === 'string') {
+														zodType = z.array(z.string());
+													} else if (prop.items?.type === 'number') {
+														zodType = z.array(z.number());
+													} else if (prop.items?.type === 'boolean') {
+														zodType = z.array(z.boolean());
+													} else {
+														zodType = z.array(z.any());
+													}
+													break;
+												case 'object':
+													zodType = z.record(z.string(), z.any());
+													break;
+												default:
+													zodType = z.any();
+											}
+
+											if (prop.description) {
+												zodType = zodType.describe(prop.description);
+											}
+
+											if (!tool.inputSchema?.required?.includes(key)) {
+												zodType = zodType.optional();
+											}
+
+											return {
+												...acc,
+												[key]: zodType,
+											};
+										},
+										{},
+									),
+								)
+								: z.object({});
+
+							return new DynamicStructuredTool({
+								name: tool.name,
+								description: tool.description || `Execute the ${tool.name} tool`,
+								schema: paramSchema,
+								func: async (params) => {
+									try {
+										const result = await client.callTool({
+											name: tool.name,
+											arguments: params,
+										}, CallToolResultSchema, requestOptions);
+
+										return typeof result === 'object' ? JSON.stringify(result) : String(result);
+									} catch (error) {
+										throw new NodeOperationError(
+											this.getNode(),
+											`Failed to execute ${tool.name}: ${(error as Error).message}`,
+										);
+									}
+								},
+							});
+						});
+
+						return {
+							json: {
+								tools: aiTools.map((t: DynamicStructuredTool) => ({
+									name: t.name,
+									description: t.description,
+									schema: zodToJsonSchema(t.schema as z.ZodTypeAny || z.object({})),
+								})),
+							},
+							pairedItem: { item: itemIndex },
+						};
+					}
+
+					case 'executeTool': {
+						const toolName = this.getNodeParameter('toolName', itemIndex) as string;
+						let toolParams;
+
+						try {
+							const rawParams = this.getNodeParameter('toolParameters', itemIndex);
+							this.logger.debug(`Raw tool parameters: ${JSON.stringify(rawParams)}`);
+
+							// Handle different parameter types
+							if (rawParams === undefined || rawParams === null) {
+								// Handle null/undefined case
+								toolParams = {};
+							} else if (typeof rawParams === 'string') {
+								// Handle string input (typical direct node usage)
+								if (!rawParams || rawParams.trim() === '') {
+									toolParams = {};
+								} else {
+									toolParams = JSON.parse(rawParams);
+								}
+							} else if (typeof rawParams === 'object') {
+								// Handle object input (when used as a tool in AI Agent)
+								toolParams = rawParams;
+							} else {
+								// Try to convert other types to object
 								try {
-									const result = await client.callTool({
-										name: tool.name,
-										arguments: params,
-									}, CallToolResultSchema, requestOptions);
-
-									return typeof result === 'object' ? JSON.stringify(result) : String(result);
-								} catch (error) {
+									toolParams = JSON.parse(JSON.stringify(rawParams));
+								} catch (parseError) {
 									throw new NodeOperationError(
 										this.getNode(),
-										`Failed to execute ${tool.name}: ${(error as Error).message}`,
+										`Invalid parameter type: ${typeof rawParams}`,
 									);
 								}
-							},
-						});
-					});
-
-					returnData.push({
-						json: {
-							tools: aiTools.map((t: DynamicStructuredTool) => ({
-								name: t.name,
-								description: t.description,
-								schema: zodToJsonSchema(t.schema as z.ZodTypeAny || z.object({})),
-							})),
-						},
-					});
-					break;
-				}
-
-				case 'executeTool': {
-					const toolName = this.getNodeParameter('toolName', 0) as string;
-					let toolParams;
-
-					try {
-						const rawParams = this.getNodeParameter('toolParameters', 0);
-						this.logger.debug(`Raw tool parameters: ${JSON.stringify(rawParams)}`);
-
-						// Handle different parameter types
-						if (rawParams === undefined || rawParams === null) {
-							// Handle null/undefined case
-							toolParams = {};
-						} else if (typeof rawParams === 'string') {
-							// Handle string input (typical direct node usage)
-							if (!rawParams || rawParams.trim() === '') {
-								toolParams = {};
-							} else {
-								toolParams = JSON.parse(rawParams);
 							}
-						} else if (typeof rawParams === 'object') {
-							// Handle object input (when used as a tool in AI Agent)
-							toolParams = rawParams;
-						} else {
-							// Try to convert other types to object
-							try {
-								toolParams = JSON.parse(JSON.stringify(rawParams));
-							} catch (parseError) {
-								throw new NodeOperationError(
-									this.getNode(),
-									`Invalid parameter type: ${typeof rawParams}`,
-								);
+
+							// Ensure toolParams is an object
+							if (
+								typeof toolParams !== 'object' ||
+								toolParams === null ||
+								Array.isArray(toolParams)
+							) {
+								throw new NodeOperationError(this.getNode(), 'Tool parameters must be a JSON object');
 							}
+						} catch (error) {
+							throw new NodeOperationError(
+								this.getNode(),
+								`Failed to parse tool parameters: ${(error as Error).message
+								}. Make sure the parameters are valid JSON.`,
+							);
 						}
 
-						// Ensure toolParams is an object
-						if (
-							typeof toolParams !== 'object' ||
-							toolParams === null ||
-							Array.isArray(toolParams)
-						) {
-							throw new NodeOperationError(this.getNode(), 'Tool parameters must be a JSON object');
-						}
-					} catch (error) {
-						throw new NodeOperationError(
-							this.getNode(),
-							`Failed to parse tool parameters: ${(error as Error).message
-							}. Make sure the parameters are valid JSON.`,
-						);
-					}
-
-					// Validate tool exists before executing
-					try {
+						// Validate tool exists before executing
 						const availableTools = await client.listTools();
 						const toolsList = Array.isArray(availableTools)
 							? availableTools
@@ -647,39 +727,72 @@ export class McpClient implements INodeType {
 
 						this.logger.debug(`Tool executed successfully: ${JSON.stringify(result)}`);
 
-						returnData.push({
+						return {
 							json: { result },
-						});
-					} catch (error) {
-						throw new NodeOperationError(
-							this.getNode(),
-							`Failed to execute tool '${toolName}': ${(error as Error).message}`,
-						);
+							pairedItem: { item: itemIndex },
+						};
 					}
-					break;
-				}
 
-				case 'listPrompts': {
-					const prompts = await client.listPrompts();
-					returnData.push({
-						json: { prompts },
-					});
-					break;
-				}
+					case 'listPrompts': {
+						const prompts = await client.listPrompts();
+						return {
+							json: { prompts },
+							pairedItem: { item: itemIndex },
+						};
+					}
 
-				case 'getPrompt': {
-					const promptName = this.getNodeParameter('promptName', 0) as string;
-					const prompt = await client.getPrompt({
-						name: promptName,
-					});
-					returnData.push({
-						json: { prompt },
-					});
-					break;
-				}
+					case 'getPrompt': {
+						const promptName = this.getNodeParameter('promptName', itemIndex) as string;
+						const prompt = await client.getPrompt({
+							name: promptName,
+						});
+						return {
+							json: { prompt },
+							pairedItem: { item: itemIndex },
+						};
+					}
 
-				default:
-					throw new NodeOperationError(this.getNode(), `Operation ${operation} not supported`);
+					default:
+						throw new NodeOperationError(this.getNode(), `Operation ${operation} not supported`);
+				}
+			};
+
+			// Process items in batches
+			for (let batchStart = 0; batchStart < items.length; batchStart += itemsPerBatch) {
+				const batchEnd = Math.min(batchStart + itemsPerBatch, items.length);
+				const batchItems = items.slice(batchStart, batchEnd);
+
+				// Process all items in the current batch in parallel
+				const batchPromises = batchItems.map(async (_item: INodeExecutionData, index: number) => {
+					const itemIndex = batchStart + index;
+					try {
+						return await processItem(itemIndex);
+					} catch (itemError) {
+						// Handle errors per item - if continueOnFail is enabled, add error to results
+						// Otherwise, rethrow the error to stop execution
+						if (this.continueOnFail()) {
+							return {
+								json: {
+									error: (itemError as Error).message,
+								},
+								pairedItem: { item: itemIndex },
+							};
+						} else {
+							throw itemError;
+						}
+					}
+				});
+
+				// Wait for all items in the batch to complete
+				const batchResults = await Promise.all(batchPromises);
+				returnData.push(...batchResults);
+
+				// Add delay between batches (except for the last batch)
+				if (batchEnd < items.length && batchInterval > 0) {
+					await new Promise<void>((resolve) => {
+						setTimeout(() => resolve(), batchInterval);
+					});
+				}
 			}
 
 			return [returnData];

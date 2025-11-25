@@ -6,9 +6,7 @@ import {
 	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { DynamicStructuredTool } from '@langchain/core/tools';
-import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { RequestOptions } from '@modelcontextprotocol/sdk/shared/protocol';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
@@ -463,108 +461,36 @@ export class McpClient implements INodeType {
 				}
 
 				case 'listTools': {
-					const rawTools = await client.listTools();
-					const tools = Array.isArray(rawTools)
-						? rawTools
-						: Array.isArray(rawTools?.tools)
-							? rawTools.tools
-							: typeof rawTools?.tools === 'object' && rawTools.tools !== null
-							? Object.values(rawTools.tools)
-							: [];
+					try {
+						const rawTools = await client.listTools();
+						this.logger.debug(`[MCP][listTools] Received tools from server: ${JSON.stringify(rawTools, null, 2)}`);
+						const tools = Array.isArray(rawTools)
+							? rawTools
+							: Array.isArray(rawTools?.tools)
+								? rawTools.tools
+								: typeof rawTools?.tools === 'object' && rawTools.tools !== null
+								? Object.values(rawTools.tools)
+								: [];
 
-					if (!tools.length) {
-						this.logger.warn('No tools found from MCP client response.');
-						throw new NodeOperationError(this.getNode(), 'No tools found from MCP client');
-					}
+						if (!tools.length) {
+							this.logger.warn('No tools found from MCP client response.');
+							throw new NodeOperationError(this.getNode(), 'No tools found from MCP client');
+						}
 
-					const aiTools = tools.map((tool: any) => {
-						const paramSchema = tool.inputSchema?.properties
-							? z.object(
-								Object.entries(tool.inputSchema.properties).reduce(
-									(acc: any, [key, prop]: [string, any]) => {
-										let zodType: z.ZodType;
-
-										switch (prop.type) {
-											case 'string':
-												zodType = z.string();
-												break;
-											case 'number':
-												zodType = z.number();
-												break;
-											case 'integer':
-												zodType = z.number().int();
-												break;
-											case 'boolean':
-												zodType = z.boolean();
-												break;
-											case 'array':
-												if (prop.items?.type === 'string') {
-													zodType = z.array(z.string());
-												} else if (prop.items?.type === 'number') {
-													zodType = z.array(z.number());
-												} else if (prop.items?.type === 'boolean') {
-													zodType = z.array(z.boolean());
-												} else {
-													zodType = z.array(z.any());
-												}
-												break;
-											case 'object':
-												zodType = z.record(z.string(), z.any());
-												break;
-											default:
-												zodType = z.any();
-										}
-
-										if (prop.description) {
-											zodType = zodType.describe(prop.description);
-										}
-
-										if (!tool.inputSchema?.required?.includes(key)) {
-											zodType = zodType.optional();
-										}
-
-										return {
-											...acc,
-											[key]: zodType,
-										};
-									},
-									{},
-								),
-							)
-							: z.object({});
-
-						return new DynamicStructuredTool({
+						const outputTools = tools.map((tool: any) => ({
 							name: tool.name,
 							description: tool.description || `Execute the ${tool.name} tool`,
-							schema: paramSchema,
-							func: async (params) => {
-								try {
-									const result = await client.callTool({
-										name: tool.name,
-										arguments: params,
-									}, CallToolResultSchema, requestOptions);
-
-									return typeof result === 'object' ? JSON.stringify(result) : String(result);
-								} catch (error) {
-									throw new NodeOperationError(
-										this.getNode(),
-										`Failed to execute ${tool.name}: ${(error as Error).message}`,
-									);
-								}
-							},
+							schema: tool.inputSchema,
+						}));
+						this.logger.debug(`[MCP][listTools] Returning tools with schemas: ${JSON.stringify(outputTools, null, 2)}`);
+						returnData.push({
+							json: { tools: outputTools },
 						});
-					});
-
-					returnData.push({
-						json: {
-							tools: aiTools.map((t: DynamicStructuredTool) => ({
-								name: t.name,
-								description: t.description,
-								schema: zodToJsonSchema(t.schema as z.ZodTypeAny || z.object({})),
-							})),
-						},
-					});
-					break;
+						break;
+					} catch (error) {
+						this.logger.error(`[MCP][listTools] Error in listTools operation: ${JSON.stringify(error, null, 2)}`);
+						throw new NodeOperationError(this.getNode(), `Error in listTools operation: ${(error as Error).message}`);
+					}
 				}
 
 				case 'executeTool': {

@@ -12,6 +12,7 @@ import { RequestOptions } from '@modelcontextprotocol/sdk/shared/protocol';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
+import { parseHeaders, mergeHeaders } from './utils';
 
 // Add Node.js process type declaration
 declare const process: {
@@ -99,6 +100,19 @@ export class McpClient implements INodeType {
 				},
 				default: '',
 				description: 'Override the URL from credentials with a custom URL',
+			},
+			{
+				displayName: 'Headers Override',
+				name: 'headersOverride',
+				type: 'string',
+				displayOptions: {
+					show: {
+						connectionType: ['sse', 'http'],
+					},
+				},
+				default: '',
+				description:
+					'Additional headers to send in the request in NAME=VALUE format, separated by newlines (e.g., Authorization=Bearer token). These will be merged with headers from credentials, with override headers taking precedence.',
 			},
 			{
 				displayName: 'Operation',
@@ -248,23 +262,20 @@ export class McpClient implements INodeType {
 				const messagesPostEndpoint = (httpCredentials.messagesPostEndpoint as string) || '';
 				timeout = httpCredentials.httpTimeout as number || 60000;
 
-				// Parse headers
-				let headers: Record<string, string> = {};
-				if (httpCredentials.headers) {
-					const headerLines = (httpCredentials.headers as string).split('\n');
-					for (const line of headerLines) {
-						const equalsIndex = line.indexOf('=');
-						// Ensure '=' is present and not the first character of the line
-						if (equalsIndex > 0) {
-							const name = line.substring(0, equalsIndex).trim();
-							const value = line.substring(equalsIndex + 1).trim();
-							// Add to headers object if key is not empty and value is defined
-							if (name && value !== undefined) {
-								headers[name] = value;
-							}
-						}
-					}
+				// Parse headers from credentials
+				const credentialHeaders = parseHeaders((httpCredentials.headers as string) || '');
+
+				// Get headers override
+				let headersOverrideStr = '';
+				try {
+					headersOverrideStr = this.getNodeParameter('headersOverride', 0, '') as string;
+				} catch (error) {
+					// Parameter doesn't exist, ignore
 				}
+				const overrideHeaders = parseHeaders(headersOverrideStr);
+
+				// Merge headers with override headers taking precedence
+				const headers = mergeHeaders(credentialHeaders, overrideHeaders);
 
 				const requestInit: RequestInit = { headers };
 				if (messagesPostEndpoint) {
@@ -299,23 +310,20 @@ export class McpClient implements INodeType {
 				const messagesPostEndpoint = (sseCredentials.messagesPostEndpoint as string) || '';
 				timeout = sseCredentials.sseTimeout as number || 60000;
 
-				// Parse headers
-				let headers: Record<string, string> = {};
-				if (sseCredentials.headers) {
-					const headerLines = (sseCredentials.headers as string).split('\n');
-					for (const line of headerLines) {
-						const equalsIndex = line.indexOf('=');
-						// Ensure '=' is present and not the first character of the line
-						if (equalsIndex > 0) {
-							const name = line.substring(0, equalsIndex).trim();
-							const value = line.substring(equalsIndex + 1).trim();
-							// Add to headers object if key is not empty and value is defined
-							if (name && value !== undefined) {
-								headers[name] = value;
-							}
-						}
-					}
+				// Parse headers from credentials
+				const credentialHeaders = parseHeaders((sseCredentials.headers as string) || '');
+
+				// Get headers override
+				let headersOverrideStr = '';
+				try {
+					headersOverrideStr = this.getNodeParameter('headersOverride', 0, '') as string;
+				} catch (error) {
+					// Parameter doesn't exist, ignore
 				}
+				const overrideHeaders = parseHeaders(headersOverrideStr);
+
+				// Merge headers with override headers taking precedence
+				const headers = mergeHeaders(credentialHeaders, overrideHeaders);
 
 				// Create SSE transport with dynamic import to avoid TypeScript errors
 				transport = new SSEClientTransport(

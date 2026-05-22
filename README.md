@@ -313,6 +313,17 @@ After setting this environment variable and restarting n8n, your MCP Client node
 - Supports both STDIO and SSE transports for connecting to MCP servers
 - SSE transport requires a server that implements the MCP Server-Sent Events specification
 
+
+## Compatible MCP Servers
+
+The following MCP servers have been verified to work well with this node:
+
+| Server | Install | Description |
+|--------|---------|-------------|
+| [@automatelab/n8n-mcp](https://automatelab.tech/n8n-mcp-server/) | `npx @automatelab/n8n-mcp` | n8n-specific MCP server: lint workflows, explain node configs, diff versions, replay failed executions, and drive live n8n instances — built for AI agents debugging and building n8n automations |
+
+> Have an MCP server that works with this node? Open a PR to add it to this list!
+
 ## Resources
 
 * [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)

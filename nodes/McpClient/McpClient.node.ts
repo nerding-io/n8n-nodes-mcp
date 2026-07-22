@@ -325,13 +325,29 @@ export class McpClient implements INodeType {
 				// Merge headers with override headers taking precedence
 				const headers = mergeHeaders(credentialHeaders, overrideHeaders);
 
-				// Create SSE transport with dynamic import to avoid TypeScript errors
+				// Create SSE transport.
+				// FIX (#148): The native EventSource API ignores a plain `headers` object passed
+				// via `eventSourceInit`. Custom headers (e.g. Authorization) were silently
+				// dropped, breaking any authenticated SSE endpoint.
+				//
+				// Solution: mirror the official n8n McpClientTool approach — supply a custom
+				// `fetch` function that explicitly merges user headers with the required
+				// `Accept: text/event-stream` header on every SSE request.
 				transport = new SSEClientTransport(
 					// @ts-ignore
 					new URL(sseUrl),
 					{
 						// @ts-ignore
-						eventSourceInit: { headers },
+						eventSourceInit: {
+							fetch: async (url: string | URL, init?: RequestInit) =>
+								await fetch(url, {
+									...init,
+									headers: {
+										...headers,
+										Accept: 'text/event-stream',
+									},
+								}),
+						},
 						// @ts-ignore
 						requestInit: {
 							headers,

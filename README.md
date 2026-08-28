@@ -50,7 +50,7 @@ Check out my YouTube Series [MCP Explained](https://www.youtube.com/playlist?lis
 
 ## Installation
 
-Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation-and-management) in the n8n community nodes documentation.
 
 Also pay attention to Environment Variables for [using tools in AI Agents](#using-as-a-tool). It's mandatory to set the `N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE` environment variable to `true` if you want to use the MCP Client node as a tool in AI Agents.
 
@@ -93,6 +93,57 @@ This example shows how to connect to a locally running MCP server using HTTP Str
    - Set the Connection Type to `HTTP Streamable`
    - Select your HTTP Streamable credentials
    - Execute the workflow to see the results
+
+#### Example: Using Parallel Search with HTTP Streamable
+
+[Parallel Search MCP](https://docs.parallel.ai/integrations/mcp/search-mcp) provides
+web search and public page extraction without running a local MCP server. No
+Parallel account or API key is required. Free access is rate limited.
+
+1. Add an MCP Client node and set **Connection Type** to `HTTP Streamable`.
+   Create new **MCP Client (HTTP Streamable) API** credentials:
+
+   - Set **HTTP Stream URL** to `https://search.parallel.ai/mcp`.
+   - Leave **Additional Headers** and **Messages Post Endpoint** empty.
+   - Keep the default **HTTP Connection Timeout**.
+   - Select these credentials on the node, leaving **Uri Override** and
+     **Headers Override** empty.
+
+2. Set **Operation** to `List Tools` and execute the node. The output should
+   include `web_search` and `web_fetch`, with their input schemas.
+
+3. Set **Operation** to `Execute Tool`, enter `web_search` as **Tool Name**,
+   and use this JSON for **Tool Parameters**:
+
+   ```json
+   {
+     "objective": "Find the official n8n community node installation instructions",
+     "search_queries": ["n8n community nodes installation"]
+   }
+   ```
+
+4. To extract a public page, use `web_fetch` as **Tool Name** with these
+   **Tool Parameters**:
+
+   ```json
+   {
+     "urls": ["https://docs.n8n.io/integrations/community-nodes/installation-and-management"],
+     "objective": "How do I install community nodes in n8n?",
+     "full_content": false
+   }
+   ```
+
+The MCP response is returned under `result`. Check `result.isError` before using
+the output, then read `result.structuredContent` or parse the JSON in
+`result.content[0].text`. The payload contains a `results` array with URLs and
+excerpts. For `web_fetch`, also check `errors` for any URLs that could not be
+extracted.
+
+When the node runs, supplied queries, URLs, and objectives/context are sent to
+Parallel. If you connect it to an AI Agent using [Using as a Tool](#using-as-a-tool),
+the agent can invoke it during the workflow. To stop using this connection,
+disable or remove the configured MCP Client node and disconnect it from any
+AI Agent. Other MCP connections are unchanged.
 
 ### Server-Sent Events (SSE) Transport (Deprecated, still available for legacy use)
 

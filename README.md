@@ -113,12 +113,17 @@ Parallel account or API key is required. Free access is rate limited.
    include `web_search` and `web_fetch`, with their input schemas.
 
 3. Set **Operation** to `Execute Tool`, enter `web_search` as **Tool Name**,
-   and use this JSON for **Tool Parameters**:
+   and use this JSON for **Tool Parameters**. Start with three short keyword
+   queries (3-6 words each), covering different angles of the same objective:
 
    ```json
    {
      "objective": "Find the official n8n community node installation instructions",
-     "search_queries": ["n8n community nodes installation"]
+     "search_queries": [
+       "n8n community nodes installation",
+       "n8n community packages GUI setup",
+       "n8n community nodes manual npm installation"
+     ]
    }
    ```
 
